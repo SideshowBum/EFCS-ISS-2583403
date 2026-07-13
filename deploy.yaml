@@ -1,0 +1,109 @@
+---
+- name: "Evaluation Finale a Caractere Synthese - ISS"
+  hosts: Web
+  become: true
+  vars_files:
+    - ./vars/secret-variables.yaml
+
+  pre_tasks:
+    - name: INSTALL DEPENDANCES DOCKER
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+        update_cache: yes
+      tags: docker
+
+    - name: AJOUT CLE GPG DE DOCKER
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      tags: docker 
+
+    - name: AJOUT DEPOT APT DE DOCKER
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable
+        state: present
+      tags: docker
+
+    - name: INSTALL DOCKER
+      apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+      tags: docker
+
+    - name: DEMARRE DOCKER
+      ansible.builtin.systemd_service:
+        state: started
+        name: docker
+      tags: docker
+  tasks:
+    - name: CREATION DOSSIER Services
+      file:
+        path: /home/deploy/projet_efcs
+        state: directory
+      tags: deploy
+
+    - name: CREATION DOSSIER conf
+      file:
+        path: /home/deploy/projet_efcs/conf
+        state: directory
+      tags: deploy
+    
+    - name: CREATION DOSSIER php
+      file:
+        path: /home/deploy/projet_efcs/php
+        state: directory
+      tags: deploy
+
+    - name: CREATION DOSSIER vars
+      file:
+        path: /home/deploy/projet_efcs/vars
+        state: directory
+      tags: deploy
+    
+    - name: COPY FICHIER compose.yaml
+      copy:
+        src: ./projet_efcs/compose.yaml
+        dest: /home/deploy/projet_efcs/compose.yaml
+      tags: deploy
+
+    - name: COPY FICHER default.conf
+      copy:
+        src: ./projet_efcs/conf/default.conf
+        dest: /home/deploy/projet_efcs/conf/default.conf
+      tags: deploy
+
+    - name: COPY FICHIER index.php
+      copy:
+        src: ./projet_efcs/html/index.php
+        dest: /home/deploy/projet_efcs/html/index.php
+      tags: deploy
+
+    - name: COPY FICHIER Dockerfile
+      copy:
+        src: ./projet_efcs/php/Dockerfile
+        dest: /home/deploy/projet_efcs/php/Dockerfile
+      tags: deploy
+
+    - name: COPY FICHIER secret-variables.yaml
+      copy:
+        src: ./vars/secret-variables.yaml
+        dest: /home/deploy/projet_efcs/vars/secret-variables.yaml
+      tags: deploy
+
+    - name: DEMARRER ET RELANCER SERVICES
+      command: docker compose up -d --build
+      args:
+        chdir: /home/deploy/projet_efcs
+      tags: deploy
+
+    - name: ARRETER LES SERVICES
+      command: docker compose down
+      args: 
+        chdir: /home/deploy/projet_efcs
+      tags: stop
