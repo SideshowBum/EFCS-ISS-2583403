@@ -1,6 +1,8 @@
-# EFCS Alexis Gobeil Copeau
+# EFCS Alexis Gobeil Copeau 2583403
+
 # Mise en place d'un service web avec Docker Compose et Automatisation avec Ansible
-# Ce depot contient les fichiers de configuration pour automatiser le deploiment
+
+# Ce depot contient les fichiers de configuration pour automatiser le deploiment 
 
 # commande de deploiment : ansible-playbook deploy.yaml --ask-vault-pass --tags deploy
 
